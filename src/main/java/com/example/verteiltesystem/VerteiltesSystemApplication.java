@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class VerteiltesystemApplication {
+public class VerteiltesSystemApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(VerteiltesystemApplication.class, args);
+        SpringApplication.run(VerteiltesSystemApplication.class, args);
     }
 
 }
