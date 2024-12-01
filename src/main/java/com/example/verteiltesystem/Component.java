@@ -166,7 +166,6 @@ public class Component {
 
             } catch (SocketTimeoutException e) {
                 System.out.println("Receive timed out while waiting for messages.");
-                break; // Exit the loop on timeout
             }
         }
     }
