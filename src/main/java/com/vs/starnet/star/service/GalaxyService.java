@@ -26,7 +26,6 @@ public class GalaxyService {
 
     public GalaxyService(SolRepository solRepository) {
         this.solRepository = solRepository;
-        //TODO put own node into Repository
     }
 
     public static void discoverGalaxy() {
