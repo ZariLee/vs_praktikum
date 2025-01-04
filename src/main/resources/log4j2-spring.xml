@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <CustomLevels>
+        <CustomLevel name="STAR_DEBUG" intLevel="400" />
+        <CustomLevel name="STAR_INFO" intLevel="300" />
+    </CustomLevels>
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss} [%p] %C{1.} - %m%n</Property>
+        <Property name="APP_LOG_DIR">logs</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console Appender with Color -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout disableAnsi="false">
+                <Pattern>
+                    %highlight{%d{yyyy-MM-dd HH:mm:ss} [%p] %C{1.} - %m%n}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, STAR_DEBUG=cyan, DEBUG=blue, STAR_DEBUG=magenta, STAR_INFO=green}
+                </Pattern>
+            </PatternLayout>
+        </Console>
+
+        <!-- Rolling File Appender -->
+        <RollingFile name="File" fileName="${APP_LOG_DIR}/application.log" filePattern="${APP_LOG_DIR}/application-%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- Root Logger -->
+        <Root level="STAR_DEBUG">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+
+        <!-- Logger for your custom STAR_DEBUG level -->
+        <Logger name="com.vs.starnet.star" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Logger>
+    </Loggers>
+</Configuration>

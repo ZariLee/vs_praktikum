@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  glismann:
+    image: starapp:latest
+    networks:
+      starnet:
+        ipv4_address: 141.22.11.130
+    command: ["8000", "130", "4"]
+
+  izyumskiy:
+    image: starapp:latest
+    networks:
+      starnet:
+        ipv4_address: 141.22.11.131
+    command: ["8000", "130", "4"]
+
+  mirzakarimova:
+    image: starapp:latest
+    networks:
+      starnet:
+        ipv4_address: 141.22.11.132
+    command: ["8000", "130", "4"]
+
+  pychlau:
+    image: starapp:latest
+    networks:
+      starnet:
+        ipv4_address: 141.22.11.133
+    command: ["8000", "130", "4"]
+
+networks:
+  starnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 141.22.11.128/29
