@@ -8,6 +8,9 @@ import lombok.*;
 import java.time.Instant;
 
 /**
+ /**
+ * represents the sol component in the system.
+ * handles data for both internal logic and json payload
  */
 @Builder
 @Getter

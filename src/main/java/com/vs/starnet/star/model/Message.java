@@ -9,6 +9,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
+ /**
+ * represents messages in the system.
+ * handles data for both internal logic and json payload
  */
 @Getter
 @Setter

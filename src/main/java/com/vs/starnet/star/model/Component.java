@@ -12,13 +12,17 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * represents the component in the system.
+ * handles data for both internal logic and json payload
  */
+// Lombok annotations (to build common methods during compilation)
 @Builder
 @Getter
 @Setter
 @ToString
 public class Component {
 
+    // fields that are part of the Json payload
     @JsonProperty("star")
     @NotNull(message = "Star UUID is required.")
     private String solStarUuid;   // Maps to "star"
@@ -43,6 +47,7 @@ public class Component {
     @NotNull(message = "Component status is required.")
     private String status;   // Maps to "status"
 
+    // ignored in json
     @JsonIgnore
     private AtomicReference<Instant> lastInteractionTime;
 
