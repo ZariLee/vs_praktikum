@@ -32,6 +32,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * class that handles the UDP communication in the system.
+ * uses Netty, a networking framework, to handle low-level UDP communication and Jackson for JSON
+ * is responsible for processing messages, handling discovery protocols, and broadcasting messages
+ */
 @Component
 public class UdpHandler {
     private static final Logger LOGGER = LogManager.getRootLogger();

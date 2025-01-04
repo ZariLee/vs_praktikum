@@ -17,9 +17,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
 /**
- */
-
-/**
  * Utility class for HTTP-based communication using Java 11+ HttpClient.
  * This class provides methods to send HTTP requests (POST, GET, DELETE, PATCH) and build JSON payloads for HTTP communication.
  * It also handles logging of requests and responses.
