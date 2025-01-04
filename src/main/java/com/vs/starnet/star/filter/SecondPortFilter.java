@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * custom filter to restrict or allow HTTP requests based on the port of receiving and the request paths
  */
 public class SecondPortFilter implements Filter {
 
@@ -23,6 +24,14 @@ public class SecondPortFilter implements Filter {
             "/vs/v1/star/*"
     );
 
+    /**
+     * inspects request and either allows or blocks
+     * @param request http request by client
+     * @param response response that will be send
+     * @param chain chain of filters in app
+     * @throws IOException
+     * @throws ServletException
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -76,6 +85,14 @@ public class SecondPortFilter implements Filter {
         chain.doFilter(request, response);
     }
 
+    /**
+     * determines if message is allowed ojn secondary port
+     * Matches either exact paths (/vs/v1/star)
+     * or pattern-based paths (/vs/v1/star/{id} for specific methods like CRUD
+     * @param method method to be matched against PATCH/GET/DELETE
+     * @param uri path to be matched against regex
+     * @return boolean
+     */
     private boolean isAllowedOnSecondaryPort(String method, String uri) {
         // Exact matches for certain endpoints
         if (SECONDARY_PORT_ALLOWED_PATHS.contains(uri)) {

@@ -2,7 +2,7 @@
 # StarApp Docker Deployment Guide
 ## Build the Application To build the Docker image for the application, use the following command:
 ```
-bash docker build -t starapp/latest .
+docker build -t starapp/latest .
 ```
 ## Create a Docker Network
 To create a Docker network with a specific subnet, run:
