@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * manages sol objects and enables setting, getting, deleting and searching them
  */
 
 @Repository

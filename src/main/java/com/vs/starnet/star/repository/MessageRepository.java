@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * manages message objects and enables setting, getting, deleting and searching them
  */
 @Repository
 public class MessageRepository {
