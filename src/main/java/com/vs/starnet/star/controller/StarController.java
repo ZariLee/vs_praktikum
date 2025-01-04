@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- */
-
-/**
  * Controller for handling component registration and interactions with SOL.
  */
 @RestController
@@ -25,6 +22,7 @@ public class StarController {
 
     StarService starService;
 
+    // connection to StarService
     public StarController(StarService starService) {
         this.starService = starService;
     }
@@ -52,7 +50,7 @@ public class StarController {
     }
 
     /**
-     * Handle PATCH request for updating a component's status.
+     * Handle PATCH / partial update request for updating a component's status.
      *
      * @param comUuid   the UUID of the component to update
      * @param component the updated component data
