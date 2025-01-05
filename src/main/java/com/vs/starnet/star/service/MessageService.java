@@ -23,6 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ *  handles message-related operations in the system including crud methods
+ */
 @Service
 public class MessageService {
 
@@ -97,6 +100,12 @@ public class MessageService {
         }
     }
 
+    /**
+     * forwards a message to a given sol or to the system's sol
+     * @param message content
+     * @param sol specified sol
+     * @return either message or failure msg
+     */
     private ResponseEntity<Map<String, String>> forwardMessageToSol(Message message, Sol sol) {
         String endpointUrl;
         // If messages is from component
@@ -131,12 +140,18 @@ public class MessageService {
         }
     }
 
+    /**
+     * get messages grouped by origin counted
+     */
     private void getMessageCountsByOrigin() {
         Map<String, Long> originCounts = messages.values().stream()
                 .collect(Collectors.groupingBy(Message::getOrigin, Collectors.counting()));
         LOGGER.log(Level.getLevel("STAR_DEBUG"), "Message counts by origin: {}", originCounts);
     }
 
+    /**
+     * prints messages via logger
+     */
     public void printAllMessages() {
         // Check if there are any messages
         if (messages.isEmpty()) {
@@ -153,6 +168,11 @@ public class MessageService {
         });
     }
 
+    /**
+     * handles message creation if current node is a sol
+     * @param message content
+     * @return response entity
+     */
     private ResponseEntity<Map<String, String>> handleMessageCreationAsSol(Message message) {
         // Generate message ID and set timestamps
         String msgUuid = nonce.getAndIncrement() + "@" + message.getOrigin();
@@ -170,6 +190,11 @@ public class MessageService {
         return ResponseEntity.ok(Map.of("msg-id", msgUuid));
     }
 
+    /**
+     * Checks if the comUuid is within a valid range (1000–9999)
+     * @param comUuid id to check
+     * @return boolean
+     */
     private boolean isComUuid(String comUuid) {
         return Integer.parseInt(comUuid) >= 1000 || Integer.parseInt(comUuid) <= 9999;
     }
@@ -240,11 +265,20 @@ public class MessageService {
     }
 
 
-
+    /**
+     * Adds the current sol's UUID to the origin field.
+     * @param origin origin to be updated
+     * @return updated origin
+     */
     private String updateOrigin(String origin) {
         return origin + ":" + ApplicationState.getSolStarUuid();
     }
 
+    /**
+     * Handles message creation when the current node is a SO
+     * @param message msg conntent
+     * @return response entity
+     */
     private ResponseEntity<Map<String, String>> processMessageAsSol(Message message) {
         long currentTime = Instant.now().getEpochSecond();
 
@@ -339,6 +373,11 @@ public class MessageService {
         }
     }
 
+    /**
+     * deletes specified msg
+     * @param msgId msg to be deleted
+     * @return response entity with http status
+     */
     private ResponseEntity<String> handleDeleteAsSol(String msgId) {
         Message message = messages.get(msgId);
 
@@ -363,6 +402,12 @@ public class MessageService {
         return new ResponseEntity<>("200 ok", HttpStatus.OK);
     }
 
+    /**
+     * send a delete request for a specified msg to sol
+     * @param msgId msg to be deleted
+     * @param star component requesting
+     * @return response entity with http status
+     */
     private ResponseEntity<String> forwardDeleteToSol(String msgId, String star) {
         String endpointUrl = "http://" + ApplicationState.getSolIp().getHostAddress() + ":" + ApplicationState.getSolPort() + "/vs/v1/messages/" + msgId + "?star=" + star;
 
@@ -390,6 +435,13 @@ public class MessageService {
         }
     }
 
+    /**
+     * gets msgs in scope and view or forwards this request to a sol before fetching
+     * @param star requester
+     * @param scope scope for messages
+     * @param view view for messages
+     * @return response entity of either the messages or the error
+     */
     public ResponseEntity<?> getMessages(String star, String scope, String view) {
         LOGGER.log(Level.getLevel("STAR_DEBUG"), "Received request to retrieve messages with scope: {}, view: {}", scope, view);
 
@@ -406,6 +458,13 @@ public class MessageService {
 
     }
 
+    /**
+     * fetches messages locally
+     * @param star requester
+     * @param scope scope for messages
+     * @param view view for messages
+     * @return response entity of the messages
+     */
     private ResponseEntity<?> fetchMessagesFromLocal(String star, String scope, String view) {
         // Logic to retrieve messages locally
         LOGGER.log(Level.getLevel("STAR_INFO"), "Fetching messages locally with scope={} and view={}", scope, view);
@@ -451,6 +510,16 @@ public class MessageService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Sends a message to a sol via an HTTP POST request.
+     * Builds a JSON payload from the Message object.
+     * Sends the payload to the appropriate sol endpoint.
+     * Handles the sol's response, including errors
+     * @param star
+     * @param scope
+     * @param view
+     * @return
+     */
     private ResponseEntity<?> forwardRequestToSol(String star, String scope, String view) {
         String solIp = ApplicationState.getSolIp().getHostAddress();
         int solPort = ApplicationState.getSolPort();
@@ -481,6 +550,12 @@ public class MessageService {
         }
     }
 
+    /**
+     * retrieves specific message
+     * @param msgId identifier of msg
+     * @param star requester
+     * @return returns msg information
+     */
     public ResponseEntity<?> getMessage(String msgId, String star) {
         LOGGER.log(Level.getLevel("STAR_INFO"), "Fetching message with ID '{}' for star '{}'", msgId, star);
 
