@@ -15,6 +15,7 @@ import java.util.Scanner;
 
 
 /**
+ * listens for user input in terminal and reacts
  */
 @Component
 public class CommandListener implements Runnable {
@@ -32,6 +33,10 @@ public class CommandListener implements Runnable {
         this.galaxyService = galaxyService;
     }
 
+    /**
+     * Continuously listens for user input commands from the terminal.
+     * Executes actions based on the command received.
+     */
     @Override
     public void run() {
         Scanner scanner = new Scanner(System.in);
@@ -54,11 +59,19 @@ public class CommandListener implements Runnable {
         }
     }
 
+    /**
+     * reacts to "CRASH" by immediately shutting down the app
+     * no handling -> immediate exit
+     */
     private void handleCrash() {
         LOGGER.error("Crashing the application...");
         System.exit(1);
     }
 
+    /**
+     * reacts to "EXIT"
+     * gentle ending the app by deregistering all components
+     */
     private void handleExit() {
         LOGGER.log(Level.getLevel("STAR_INFO"), "Exiting the application...");
         if (ApplicationState.getCurrentRole() == NodeRole.COMPONENT) {
