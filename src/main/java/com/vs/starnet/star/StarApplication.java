@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
 
+
 @SpringBootApplication
 public class StarApplication {
     static final Logger LOGGER = LogManager.getRootLogger();
@@ -33,7 +34,10 @@ public class StarApplication {
     @Autowired
     private ComponentService componentService;
 
-
+    /**
+     * entry point
+     * intializes spring context and sets up base environment
+     */
     public static void main(String[] args) {
         // Ensure all necessary arguments are passed
         if (args.length < 3) {
@@ -78,6 +82,10 @@ public class StarApplication {
         componentService.startComponent();
     }
 
+    /**
+     * configures a secondary embedded Tomcat server to listen on the Galaxy Port
+     * @return Tomcat server
+     */
     @Bean
     public ConfigurableServletWebServerFactory secondaryServer() {
         return new TomcatServletWebServerFactory() {
@@ -94,6 +102,10 @@ public class StarApplication {
         };
     }
 
+    /**
+     * handles requests for the secondary server
+     * @return the registration bean
+     */
     @Bean
     public FilterRegistrationBean<SecondPortFilter> secondPortFilter() {
         FilterRegistrationBean<SecondPortFilter> registrationBean = new FilterRegistrationBean<>();
@@ -103,6 +115,11 @@ public class StarApplication {
         return registrationBean;
     }
 
+    /**
+     * starts command listener in seperate thread
+     * @param commandListener listener to be started
+     * @return instance of commandlinerunner interface
+     */
     @Bean
     public CommandLineRunner runCommandListener(CommandListener commandListener) {
         return args -> {
