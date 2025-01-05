@@ -18,6 +18,9 @@ import java.time.Instant;
 import java.util.*;
 
 /**
+ * manages the functionality of a system with a sol
+ * performs tasks such as registration, updates,
+ * deregistration, and discovery of stars using both HTTP and UDP protocols.
  */
 @Service
 public class GalaxyService {
@@ -28,6 +31,9 @@ public class GalaxyService {
         this.solRepository = solRepository;
     }
 
+    /**
+     * broadcasts a hello with identifier
+     */
     public static void discoverGalaxy() {
         // Send broadcast to discover the galaxy
         try {
@@ -37,7 +43,11 @@ public class GalaxyService {
         }
     }
 
-
+    /**
+     * ensures only sol can register a star / component
+     * @param sol the current sol
+     * @return either conflict content or new star / component
+     */
     public ResponseEntity<Sol> registerStar(Sol sol) {
         if (ApplicationState.getCurrentRole() != NodeRole.SOL) {
             LOGGER.error("Only SOL can register a star.");
@@ -59,6 +69,12 @@ public class GalaxyService {
                 .noCom(ApplicationState.getMaxComponents()).status("200").build());
     }
 
+    /**
+     * ensures update is done bei sol. updates a star / component
+     * @param starUuid component identifier
+     * @param sol sol for validation
+     * @return either conflict content or updated star entity
+     */
     public ResponseEntity<Sol> updateStar(String starUuid, Sol sol) {
         if (ApplicationState.getCurrentRole() != NodeRole.SOL) {
             LOGGER.error("Only SOL can update a star.");
@@ -83,6 +99,11 @@ public class GalaxyService {
                 .noCom(ApplicationState.getMaxComponents()).status("200").build());
     }
 
+    /**
+     * gets star details if done by sol
+     * @param starUuid component identifier
+     * @return either conflict content or component details
+     */
     public ResponseEntity<Sol> getStarDetail(String starUuid) {
         if (ApplicationState.getCurrentRole() != NodeRole.SOL) {
             LOGGER.error("Only SOL can get star details.");
@@ -103,6 +124,10 @@ public class GalaxyService {
         return ResponseEntity.ok(sol);
     }
 
+    /**
+     * gets star details of all stars / components if done by sol
+     * @return either conflict content or component details in map of all components
+     */
     public ResponseEntity<Map<String, Object>> getStarDetails() {
         if (ApplicationState.getCurrentRole() != NodeRole.SOL) {
             LOGGER.error("Only SOL can get star details.");
@@ -136,6 +161,12 @@ public class GalaxyService {
         return ResponseEntity.ok(responseMap);
     }
 
+    /**
+     * deregisters a component
+     * @param starUuid component identifier
+     * @param request HTTP request
+     * @return validation that component was deregistered or conflict content
+     */
     public ResponseEntity<String> deregisterStar(String starUuid, HttpServletRequest request) {
         String senderIp = request.getRemoteAddr();
         if (ApplicationState.getCurrentRole() != NodeRole.SOL) {
@@ -169,6 +200,9 @@ public class GalaxyService {
         return ResponseEntity.ok("Star deregistered: " + starUuid);
     }
 
+    /**
+     * reverses deregistration of a component
+     */
     public void unregisterLocalStar(){
         if (ApplicationState.getCurrentRole() != NodeRole.SOL) {
             LOGGER.error("Only SOL can deregister a star.");
@@ -187,6 +221,10 @@ public class GalaxyService {
         notifyOtherStars(ApplicationState.getStarUuid());
     }
 
+    /**
+     * notifies stars based on uuid key
+     * @param starUuid identifier
+     */
     private void notifyOtherStars(String starUuid) {
         solRepository.findAll().forEach((starUuidKey, star) -> {
                 try {
@@ -197,7 +235,12 @@ public class GalaxyService {
         });
     }
 
-
+    /**
+     * helper method for notifying other stars with a retry logic, before giving up on notification
+     * @param targetStar identifier
+     * @param deregisteringStarUuid identifier
+     * @throws InterruptedException
+     */
     private void attemptDeregistration(Sol targetStar, String deregisteringStarUuid) throws InterruptedException {
         int retries = 0;
         boolean success = false;
