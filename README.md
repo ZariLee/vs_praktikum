@@ -45,6 +45,53 @@ docker run --net starnet \
 **Key Difference**:  
 For each new container, increment the port numbers to simulate a new node in the network. For example, Node 2 uses `230` for the `group-id` while keeping the `galaxy-id` constant at `200` to simulate multiple galaxies.
 
+## Start 2 Galaxies
+### Galaxy 1: 
+**Component 1**
+```
+    docker run --net starnet 
+    -p 8130:8130/udp -p 8200:8200/udp 
+    -p 8130:8130 -p 8200:8200 
+    --ip 141.22.11.130
+    --rm -it starapp/latest 8000 200 130 4 
+```
+**Component 2**
+_(in new terminal)_
+```
+    docker run --net starnet 
+    -p 8131:8130/udp -p 8201:8200/udp 
+    -p 8131:8130 -p 8201:8200 
+    --ip 141.22.11.131 
+    --rm -it starapp/latest 8000 200 130 4
+```                          
+_this component should be registered, but not a sol_
+
+### Galaxy 2:
+**Component 1**
+_(in new terminal)_
+```
+    docker run --net starnet 
+    -p 8134:8130/udp -p 8204:8200/udp 
+    -p 8134:8130 -p 8204:8200 
+    --ip 141.22.11.134 
+    --rm -it starapp/latest 8000 200 230 4
+```    
+
+**Component 2**
+_(in new terminal)_
+
+```
+    docker run --net starnet 
+    -p 8135:8130/udp -p 8205:8200/udp 
+    -p 8135:8130 -p 8205:8200 
+    --ip 141.22.11.135 
+    --rm -it starapp/latest 8000 200 230 4
+```
+_this component should be registered, but not a sol_
+
+You should now see all components in docker.
+Up to 4 components per galaxy are possible.
+
 ## Port Mapping Explained:
 
 ### UDP Ports:
