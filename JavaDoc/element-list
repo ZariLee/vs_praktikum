@@ -1,0 +1,9 @@
+com.vs.starnet.star
+com.vs.starnet.star.constants
+com.vs.starnet.star.controller
+com.vs.starnet.star.filter
+com.vs.starnet.star.model
+com.vs.starnet.star.network
+com.vs.starnet.star.repository
+com.vs.starnet.star.service
+com.vs.starnet.star.ui

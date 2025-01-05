@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * responsible for managing the behavior of a sol
  */
 @Service
 public class StarService {
@@ -78,6 +79,9 @@ public class StarService {
         printSolDetails();
     }
 
+    /**
+     * logs the details of a sol
+     */
     public static void printSolDetails() {
         LOGGER.log(Level.getLevel("STAR_DEBUG"), "SOL details:");
         LOGGER.log(Level.getLevel("STAR_DEBUG"), "STAR-UUID: {}", ApplicationState.getStarUuid());
@@ -248,6 +252,12 @@ public class StarService {
         return new ResponseEntity<>("200 ok", HttpStatus.OK);
     }
 
+    /**
+     * checks status of a specified component
+     * @param comUuid component identifier
+     * @param star requesting star
+     * @return response entity of status or failure
+     */
     public ResponseEntity<Map<String, String>> getComponentStatus(String comUuid, String star) {
         if (!ApplicationState.getIsReady()) {
             return new ResponseEntity<>(Map.of("", ""), HttpStatus.SERVICE_UNAVAILABLE);
@@ -292,6 +302,9 @@ public class StarService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * sttarts thread to periodically check components' health
+     */
     public static void startHealthMonitoring() {
         new Thread(() -> {
             while (true) {
@@ -300,6 +313,10 @@ public class StarService {
         }).start();
     }
 
+    /**
+     * method for checking components' health
+     * based on interaction time
+     */
     private static void performHealthCheck() {
         for (Map.Entry<String, Component> entry : components.entrySet()) {
             Instant currentTime = Instant.now();
@@ -326,6 +343,10 @@ public class StarService {
         }
     }
 
+    /**
+     * method for checking a specific component's health
+     * @param component component identifier
+     */
     public static void checkComponentHealth(Component component) {
         try {
             // Prepare the endpoint URL for checking the component status
@@ -373,6 +394,9 @@ public class StarService {
         }
     }
 
+    /**
+     * deregister all active components
+     */
     public void deregisterComponents() {
         LOGGER.log(Level.getLevel("STAR_INFO"), "Deregistering all active components...");
 
