@@ -12,6 +12,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * Maintains the current state of the application
+ * uses atomic variables
+ * -> actions on av are indivisible and singular, no outside observance during operation
  */
 public class ApplicationState {
 
@@ -34,6 +37,7 @@ public class ApplicationState {
     @Getter
     private static int galaxyPort;
 
+    //Getters and Setters
     public static NodeRole getCurrentRole() {
         return currentRole.get();
     }
@@ -130,6 +134,9 @@ public class ApplicationState {
         isReady.set(readyValue);
     }
 
+    /**
+     * resets/clears all atomic variables to null/0 -> default state
+     */
     public static synchronized void reset() {
         currentRole.set(NodeRole.COMPONENT);
         groupId.set(null);

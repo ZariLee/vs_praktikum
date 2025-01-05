@@ -15,28 +15,10 @@ import org.springframework.stereotype.Service;
 import java.net.http.HttpResponse;
 
 /**
- */
-
-/**
- * The {@code ComponentService} class is responsible for managing the lifecycle of a network component
- * in a star topology system. It handles communication with the SOL (Star of Life) via UDP and HTTP,
- * ensuring proper registration, status updates, and monitoring of the component's state.
- *
- * <p>This service follows these responsibilities:
- * <ul>
- *     <li>Discovers the SOL using UDP broadcast messages.</li>
- *     <li>Registers the component with the SOL using HTTP POST requests.</li>
- *     <li>Monitors the SOL periodically using HTTP PATCH requests.</li>
- *     <li>Handles failure scenarios, such as unreachable SOL or invalid component states.</li>
- * </ul>
- *
- * <p>Key configuration constants include:
- * <ul>
- *     <li>{@code MAX_RETRIES}: Number of retries for discovering SOL via UDP.</li>
- *     <li>{@code MAX_CONNECTION_RETRIES}: Number of retries for status updates via HTTP.</li>
- *     <li>{@code FIRST_RETRY_DELAY}: Delay (in milliseconds) before the first retry for SOL discovery.</li>
- *     <li>{@code SECOND_RETRY_DELAY}: Delay (in milliseconds) before the second retry for SOL discovery.</li>
- * </ul>
+ * manages interactions/operations of the component
+ * interacts with sol via UDP / HTTP
+ * service is responsible for discovering the sol,
+ * registering the component, monitoring its status, and promoting the component to sol
  **/
 @Service
 public class ComponentService {
@@ -56,14 +38,12 @@ public class ComponentService {
 
 
     /**
-     * Starts the component lifecycle by attempting to discover the SOL and initiating necessary monitoring or promotion processes.
-     *
-     * <p>This method:
-     * <ul>
-     *     <li>Starts a UDP server thread to listen for SOL responses.</li>
-     *     <li>Attempts to discover the SOL using {@code waitForSolResponse()}.</li>
-     *     <li>Registers the component with the discovered SOL or promotes the component to SOL if none is found.</li>
-     * </ul>
+     * Starts the component lifecycle by attempting to discover the sol
+     * and initiating necessary monitoring or promotion processes.
+     * Starts a UDP server thread to listen for SOL responses.
+     * Attempts to discover the sol
+     * registers the component with the discovered sol or promotes the component
+     * to sol if none is found.
      */
     public void startComponent() {
         try {
@@ -112,12 +92,11 @@ public class ComponentService {
 
     /**
      * Sends a UDP broadcast to discover the SOL and waits for a response.
-     *
-     * <p>The method sends an initial broadcast, waits 10 seconds, sends the second broadcast,
+     * The method sends an initial broadcast, waits 10 seconds, sends the second broadcast,
      * waits another 10 seconds, and sends the third broadcast. The method checks for a response
-     * after each broadcast. If a SOL is discovered, it returns {@code true}, otherwise {@code false}.
+     * after each broadcast. If a SOL is discovered.
      *
-     * @return {@code true} if a SOL is discovered, {@code false} otherwise.
+     * @return bool for sol discovery.
      * @throws Exception if an error occurs while sending the broadcast or waiting for a response.
      */
     private boolean waitForSolResponse() throws Exception {
@@ -157,10 +136,10 @@ public class ComponentService {
     }
 
     /**
-     * Registers the component with the discovered SOL using an HTTP POST request.
-     *
-     * <p>This method prepares a registration payload containing the component's details
-     * and sends it to the SOL. If the registration fails (non-200 response), the component shuts down.
+     * Registers the component with the discovered sol using an HTTP POST request.
+     * This method prepares a registration payload containing the component's details
+     * and sends it to the SOL. If the registration fails (non-200 response),
+     * the component shuts down.
      */
     private void registerWithSol() {
         try {
@@ -200,10 +179,8 @@ public class ComponentService {
     }
 
     /**
-     * Periodically monitors the SOL by sending HTTP PATCH requests every 30 seconds.
-     *
-     * <p>The method runs in a separate thread to ensure non-blocking operation.
-     * It invokes {@code updateComponentStatus()} to send the PATCH requests.
+     * Periodically monitors the sol by sending HTTP PATCH requests every 30 seconds.
+     * The method runs in a separate thread to ensure non-blocking operation.
      */
     private void startSolMonitoring() {
         // Create a new thread to periodically send the PATCH request to the SOL
@@ -222,20 +199,14 @@ public class ComponentService {
 
     /**
      * Sends an HTTP PATCH request to the SOL to update the component's status.
-     *
-     * <p>The method retries up to {@code MAX_CONNECTION_RETRIES} times with a 10-second delay
+     * The method retries up to MAX_CONNECTION_RETRIES times with a 10-second delay
      * between attempts if the update fails. If the SOL responds with specific failure codes
-     * (e.g., 401, 404, 409), the component shuts down immediately.
-     *
-     * <p>Response handling:
-     * <ul>
-     *     <li>200: Status successfully updated.</li>
-     *     <li>401: Unauthorized; component shuts down.</li>
-     *     <li>404: Component not found; component shuts down.</li>
-     *     <li>409: Conflict; component shuts down.</li>
-     * </ul>
-     *
-     * @see HttpHandler#sendPatchRequest(String, String, String)
+     * (eg 40x), the component shuts down immediately.
+     * Response handling:
+     * 200: Status successfully updated.
+     * 401: Unauthorized; component shuts down.
+     * 404: Component not found; component shuts down.
+     * 409: Conflict; component shuts down.
      */
     private void updateComponentStatus() {
         int retries = 0;
@@ -302,9 +273,8 @@ public class ComponentService {
     }
 
     /**
-     * Promotes the component to SOL by initializing it in SOL mode.
-     *
-     * <p>This method is invoked when no SOL is discovered during the initial setup phase.
+     * Promotes the component to sol by initializing it in SOL mode.
+     * This method is invoked when no sol is discovered during the initial setup phase.
      */
     private void promoteToSol() {
         StarService.initializeAsSOL();
@@ -312,12 +282,9 @@ public class ComponentService {
 
     /**
      * Shuts down the component by logging the event and terminating the application.
-     *
-     * <p>This method is called when critical errors occur, such as:
-     * <ul>
-     *     <li>Failure to register or update the component status with the SOL.</li>
-     *     <li>Unauthorized or conflict errors during communication with the SOL.</li>
-     * </ul>
+     * This method is called when critical errors occur, such as:
+     * Failure to register or update the component status with the sol.
+     * Unauthorized or conflict errors during communication with the sol.
      */
     private void shutdownComponent() {
         LOGGER.log(Level.getLevel("STAR_INFO"), "Component is shutting down...");
@@ -325,7 +292,7 @@ public class ComponentService {
     }
 
     public void deregisterComponent() {
-        // Get the SOL IP and port
+        // Get the sol IP and port
         String solIp = ApplicationState.getSolIp().getHostAddress();
         int solPort = ApplicationState.getSolPort();
 
