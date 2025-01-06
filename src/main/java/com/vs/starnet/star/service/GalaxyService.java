@@ -44,9 +44,9 @@ public class GalaxyService {
     }
 
     /**
-     * ensures only sol can register a star / component
+     * ensures only sol can register a star
      * @param sol the current sol
-     * @return either conflict content or new star / component
+     * @return either conflict content or new star
      */
     public ResponseEntity<Sol> registerStar(Sol sol) {
         if (ApplicationState.getCurrentRole() != NodeRole.SOL) {
@@ -70,7 +70,7 @@ public class GalaxyService {
     }
 
     /**
-     * ensures update is done bei sol. updates a star / component
+     * ensures update is done bei sol. updates a star
      * @param starUuid component identifier
      * @param sol sol for validation
      * @return either conflict content or updated star entity
@@ -125,7 +125,7 @@ public class GalaxyService {
     }
 
     /**
-     * gets star details of all stars / components if done by sol
+     * gets star details of all stars if done by sol
      * @return either conflict content or component details in map of all components
      */
     public ResponseEntity<Map<String, Object>> getStarDetails() {
