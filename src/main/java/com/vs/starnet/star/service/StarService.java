@@ -530,4 +530,10 @@ public class StarService {
         }
         return hexString.toString();
     }
+
+    public static void resetForTests() {
+        components.clear();
+        inactiveComponents.clear();
+    }
+
 }

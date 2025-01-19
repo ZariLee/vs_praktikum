@@ -677,5 +677,3 @@ public class MessageService {
         }
     }
 }
-
-
