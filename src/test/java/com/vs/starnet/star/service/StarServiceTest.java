@@ -16,12 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Testklasse für den StarService
- */
 class StarServiceTest {
-
-    // todo Testklasse noch nicht fertig
 
     private StarService starService;
 
@@ -50,47 +45,51 @@ class StarServiceTest {
 
     @Test
     void testInitializeAsSOL() {
-        // Wir verändern initial den State etwas, damit wir prüfen können, ob initializeAsSOL() ihn richtig setzt.
+        // We initially change the state slightly so that we can check whether initializeAsSOL() sets it correctly.
+        // CurrentRole is set to COMPONENT -> later SOL
         ApplicationState.setCurrentRole(NodeRole.COMPONENT);
+        // StarUuid is set to null -> will be generated later
         ApplicationState.setStarUuid(null);
+        // Placeholder value
         ApplicationState.setComUuid("temp-com-uuid");
+        // IP address is set to 127.0.0.1
         ApplicationState.setIp(InetAddress.getLoopbackAddress());
 
-        // Aufruf
         StarService.initializeAsSOL();
 
-        // Assertions
-        assertEquals(NodeRole.SOL, ApplicationState.getCurrentRole());
+        assertEquals(NodeRole.SOL, ApplicationState.getCurrentRole()); // SOL?
         assertNotNull(ApplicationState.getStarUuid());
         assertNotNull(ApplicationState.getSolStarUuid());
-//        assertTrue(StarService.components.containsKey(ApplicationState.getComUuid()),
-//                "Nach initializeAsSOL() sollte das 'SOL'-Eigene Component in components liegen");
+        // Has the SOL node entered itself as an active component in the components map?
+        assertTrue(StarService.getComponents().containsKey(ApplicationState.getComUuid()),
+                "Nach initializeAsSOL() sollte das 'SOL'-Eigene Component in components liegen");
     }
-
+    
     @Test
     void testRegisterComponent_Success() {
-        // Bereits vorhandenes SOL-Component eintragen (manuell oder via initializeAsSOL)
-        StarService.initializeAsSOL(); // So ist ein "eigenes" SOL-Component bereits drin
+        // enter a SOL component
+        StarService.initializeAsSOL();
 
-        // Neues Component, das registriert werden soll:
+        // new component to be registered
         Component newComp = Component.builder()
-                .solStarUuid(ApplicationState.getStarUuid())    // Muss matchen
-                .solComUuid(ApplicationState.getComUuid())      // Muss matchen
-                .comUuid("new-com-uuid")                        // Eindeutig neu
+                .solStarUuid(ApplicationState.getStarUuid())
+                .solComUuid(ApplicationState.getComUuid())
+                .comUuid("new-com-uuid")
                 .comIp("127.0.0.1")
                 .comPort(8130)
                 .status("200")
                 .build();
 
         ResponseEntity<String> response = starService.registerComponent(newComp);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("200 ok", response.getBody());
-//        assertTrue(StarService.components.containsKey("new-com-uuid"));
+        assertTrue(StarService.getComponents().containsKey("new-com-uuid"));
     }
 
     @Test
     void testRegisterComponent_ServiceUnavailable() {
-        // Wir tun so, als sei das System nicht bereit
+        // We act as if the system is not ready
         ApplicationState.setIsReady(false);
 
         Component newComp = Component.builder()
@@ -103,14 +102,16 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.registerComponent(newComp);
+
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
         assertEquals("503 service unavailable", response.getBody());
-        // Kein Eintrag in components
-//        assertFalse(StarService.components.containsKey("new-com-uuid"));
+        // No entry in components
+        assertFalse(StarService.getComponents().containsKey("new-com-uuid"));
     }
 
     @Test
     void testRegisterComponent_StarUuidMismatch() {
+        // enter a SOL component
         StarService.initializeAsSOL();
 
         // STAR-UUID mismatch
@@ -124,12 +125,14 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.registerComponent(newComp);
+
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("401 unauthorized", response.getBody());
     }
 
     @Test
     void testRegisterComponent_ComUuidMismatch() {
+        // enter a SOL component
         StarService.initializeAsSOL();
 
         // COM-UUID mismatch
@@ -143,19 +146,20 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.registerComponent(newComp);
+
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("401 unauthorized", response.getBody());
     }
 
     @Test
     void testRegisterComponent_MaxComponentsReached() {
-        // Setze maxComponents auf 1, damit wir schnell "full" erreichen
+        // Set maxComponents to 1 so we can reach "full" quickly
         ApplicationState.setMaxComponents(1);
 
-        // Initialisiere SOL (damit 1 Eintrag in components liegt = das SOL selbst)
+        // Initialize SOL (so that there is 1 entry in components = the SOL itself)
         StarService.initializeAsSOL();
 
-        // Versuche, noch ein weiteres Component zu registrieren
+        // Try to register another component
         Component newComp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -165,18 +169,18 @@ class StarServiceTest {
                 .status("200")
                 .build();
 
-        // Nun sollte es abgewiesen werden
         ResponseEntity<String> response = starService.registerComponent(newComp);
+
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("403 no room left", response.getBody());
     }
 
     @Test
     void testRegisterComponent_Conflict() {
-        // StarService als SOL initialisieren
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Component mit comUuid == "test-com-uuid" (also das SOL selbst) - ist schon registriert
+        // Component with comUuid == "test-com-uuid" (the SOL itself) - is already registered
         Component conflictComp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -187,16 +191,17 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.registerComponent(conflictComp);
+
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("409 conflict", response.getBody());
     }
 
     @Test
     void testUpdateComponent_Success() {
-        // StarService initialisieren
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Registriere eine Komponente
+        // register a component
         Component newComp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -207,7 +212,7 @@ class StarServiceTest {
                 .build();
         starService.registerComponent(newComp);
 
-        // Update: wir ändern aber nur LastInteractionTime via Aufruf, die IP & Port sollen matchen
+        // Update: new LastInteractionTime via call -> all values remain the same
         Component updatedComp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -218,19 +223,20 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.updateComponent("comp-1", updatedComp);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("200 ok", response.getBody());
 
-        // Die LastInteractionTime sollte jetzt aktualisiert sein
-//        assertNotNull(StarService.components.get("comp-1").getLastInteractionTime());
+        // // The LastInteractionTime should now be updated
+        assertNotNull(StarService.getComponents().get("comp-1").getLastInteractionTime());
     }
 
     @Test
     void testUpdateComponent_NotFound() {
-        // StarService initialisieren
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Versuch Update ohne vorheriges Register
+        // Attempt update without previous register
         Component comp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -241,12 +247,14 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.updateComponent("unknown-comp", comp);
+
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("404 does not exist", response.getBody());
     }
 
     @Test
     void testUpdateComponent_ServiceUnavailable() {
+        // We act as if the system is not ready
         ApplicationState.setIsReady(false);
 
         Component comp = Component.builder()
@@ -259,16 +267,17 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.updateComponent("comp-1", comp);
+
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
         assertEquals("503 service unavailable", response.getBody());
     }
 
     @Test
     void testUpdateComponent_StarUuidMismatch() {
-        // Initialisiere
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Registriere eine Komponente
+        // register a component
         Component comp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -279,7 +288,7 @@ class StarServiceTest {
                 .build();
         starService.registerComponent(comp);
 
-        // Update mit falschem star
+        // update with wrong star
         Component wrongStarComp = Component.builder()
                 .solStarUuid("wrong-star")
                 .solComUuid(ApplicationState.getComUuid())
@@ -290,47 +299,48 @@ class StarServiceTest {
                 .build();
 
         ResponseEntity<String> response = starService.updateComponent("comp-123", wrongStarComp);
+
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("401 unauthorized", response.getBody());
     }
 
     @Test
     void testDeregisterComponent_Success() {
-        // StarService initialisieren
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Registriere eine Komponente
+        // register a component
         Component comp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
                 .comUuid("comp-2")
-                .comIp("127.0.0.1") // muss gleich dem Requester sein
+                .comIp("127.0.0.1")
                 .comPort(9002)
                 .status("200")
                 .lastInteractionTime(new AtomicReference<>(Instant.now()))
                 .build();
         starService.registerComponent(comp);
 
-        // HttpServletRequest mocken
+        // mock HttpServletRequest
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRemoteAddr()).thenReturn("127.0.0.1");
 
-        // Aufruf
         ResponseEntity<String> response = starService.deregisterComponent("comp-2", ApplicationState.getSolStarUuid(), request);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("200 ok", response.getBody());
 
-        // Inaktive Komponenten checken
-//        assertFalse(StarService.components.containsKey("comp-2"));
-//        assertTrue(StarService.inactiveComponents.containsKey("comp-2"));
+        // check inactive components
+        assertFalse(StarService.getComponents().containsKey("comp-2"));
+        assertTrue(StarService.getInactiveComponents().containsKey("comp-2"));
     }
 
     @Test
     void testDeregisterComponent_UnauthorizedIp() {
-        // StarService initialisieren
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Registriere Komponente
+        // register a component
         Component comp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -340,24 +350,25 @@ class StarServiceTest {
                 .build();
         starService.registerComponent(comp);
 
-        // HttpServletRequest mocken -> anderes IP
+        // mock HttpServletRequest -> another IP
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRemoteAddr()).thenReturn("192.168.123.1");
 
         ResponseEntity<String> response = starService.deregisterComponent("comp-3", ApplicationState.getSolStarUuid(), request);
+
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("401 unauthorized", response.getBody());
 
-        // Noch aktiv?
-//        assertTrue(StarService.components.containsKey("comp-3"));
+        // still active?
+        assertTrue(StarService.getComponents().containsKey("comp-3"));
     }
 
     @Test
     void testGetComponentStatus_Success() {
-        // StarService initialisieren
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Registriere Komponente
+        // register component
         Component comp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -369,6 +380,7 @@ class StarServiceTest {
         starService.registerComponent(comp);
 
         ResponseEntity<Map<String, String>> response = starService.getComponentStatus("comp-status", ApplicationState.getStarUuid());
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("200", response.getBody().get("status"));
@@ -377,10 +389,10 @@ class StarServiceTest {
 
     @Test
     void testGetComponentStatus_StarUuidMismatch() {
-        // StarService initialisieren
+        // enter a SOL component
         StarService.initializeAsSOL();
 
-        // Registriere Komponente
+        // register component
         Component comp = Component.builder()
                 .solStarUuid(ApplicationState.getStarUuid())
                 .solComUuid(ApplicationState.getComUuid())
@@ -391,39 +403,20 @@ class StarServiceTest {
                 .build();
         starService.registerComponent(comp);
 
-        // Falscher star-Parameter
+        // Incorrect star parameter
         ResponseEntity<Map<String, String>> response = starService.getComponentStatus("comp-status2", "wrong-star");
+
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
     void testGetComponentStatus_NotFound() {
-        // StarService initialisieren, aber keine weitere Komponente registrieren
+        // enter a SOL component, but do not register any further components
         StarService.initializeAsSOL();
 
-        // Abfrage, die nicht existiert
+        //Query that doesn't exist
         ResponseEntity<Map<String, String>> response = starService.getComponentStatus("unknown-comp", ApplicationState.getStarUuid());
+
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-    }
-
-    @Test
-    @Disabled("Da deregisterComponents() ein System.exit(1) aufruft, nur als Beispiel disabled.")
-    void testDeregisterComponents_ExitsProcess() {
-        // StarService initialisieren
-        StarService.initializeAsSOL();
-
-        // Registriere eine Komponente
-        Component comp = Component.builder()
-                .solStarUuid(ApplicationState.getStarUuid())
-                .solComUuid(ApplicationState.getComUuid())
-                .comUuid("comp-to-exit")
-                .comIp("127.0.0.2")
-                .comPort(9005)
-                .status("200")
-                .build();
-        starService.registerComponent(comp);
-
-        // Würde System.exit(1) auslösen
-        // starService.deregisterComponents();
     }
 }

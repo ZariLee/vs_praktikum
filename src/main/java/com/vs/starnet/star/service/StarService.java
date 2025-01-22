@@ -536,4 +536,11 @@ public class StarService {
         inactiveComponents.clear();
     }
 
+    public static Map<String, Component> getComponents() {
+        return components;
+    }
+
+    public static Map<String, Component> getInactiveComponents() {
+        return inactiveComponents;
+    }
 }

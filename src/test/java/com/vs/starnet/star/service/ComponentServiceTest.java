@@ -1,6 +1,5 @@
 package com.vs.starnet.star.service;
 
-import com.vs.starnet.star.network.HttpHandler;
 import com.vs.starnet.star.network.UdpHandler;
 import com.vs.starnet.star.repository.SolRepository;
 import com.vs.starnet.star.model.Sol;
@@ -13,9 +12,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.net.InetAddress;
-import java.net.http.HttpResponse;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
